@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using DataAccessLayer;
+using Models;
 
 namespace SampleApi.Controllers
 {
@@ -34,74 +35,41 @@ namespace SampleApi.Controllers
         // POST: https://localhost:7214/api/Employee
         [HttpPost]
        
-        public IActionResult PostEmployee([FromBody]Employee employee)
+        public IActionResult PostEmploye([FromBody] AddEmploeeDto employee)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            // Simulate adding a new employee (in a real application, you'd typically save to a database)
-            employee.Id = employees.Count + 1;
-            employees.Add(employee);
-
-            // Return the created employee with status code 201 Created
-            return CreatedAtRoute("DefaultApi", new { id = employee.Id }, employee);
+            EmployeeDAL employeeDAL = new EmployeeDAL();
+            var empId = employeeDAL.AddEmployee(employee);
+            return Ok(empId);
         }
 
         // PUT: https://localhost:7214/api/Employee/10
         [HttpPut("{{id}}")]
        
-        public IActionResult PutEmployee([FromQuery] int id, [FromBody] Employee employee)
+        public IActionResult PutEmployee([FromQuery] int id, [FromBody] EmployeeDto employee)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var existingEmployee = employees.FirstOrDefault(e => e.Id == id);
-            if (existingEmployee == null)
-            {
-                return NotFound();
-            }
-
-            // Update the existing employee (in a real application, you'd typically update in the database)
-            existingEmployee.Name = employee.Name;
-            existingEmployee.Department = employee.Department;
-
-            return Ok();
+            EmployeeDAL employeeDAL = new EmployeeDAL();
+            employee.EmpId = id;
+            var updatedEmployee = employeeDAL.UpdateEmployee(employee);
+            return Ok(updatedEmployee);
         }
 
         // DELETE: https://localhost:7214/api/Employee/10
         [HttpDelete("{{id}}")]
         public IActionResult DeleteEmployee([FromQuery] int id)
         {
-            var employee = employees.FirstOrDefault(e => e.Id == id);
-            if (employee == null)
-            {
-                return NotFound();
-            }
-
-            employees.Remove(employee);
-
-            return Ok();
+            EmployeeDAL employeeDAL = new EmployeeDAL();
+            var deletedStatus = employeeDAL.DeleteEmployee(id);
+            return Ok(deletedStatus);
         }
 
         // DELETE: https://localhost:7214/api/Employee/10
         [HttpGet()]
         [Route("GetOnlyEmployeeAddress")]
-        public IActionResult GetOnlyEmployeeAddress([FromQuery] int id)
+        public IActionResult GetOnlyEmployeeAddress()
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, "Error deleting employee.");
+            EmployeeDAL employeeDAL = new EmployeeDAL();
+            var empAddresses = employeeDAL.GetAllEmployessAddress();
+            return Ok(empAddresses);
         }
-
-
-        private static List<Employee> employees = new List<Employee>
-    {
-        new Employee { Id = 1, Name = "John Doe", Department = "IT" },
-        new Employee { Id = 2, Name = "Jane Smith", Department = "HR" }
-        // Add more initial employees as needed
-    };
-
     }
 }
